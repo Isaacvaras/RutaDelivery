@@ -17,6 +17,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tienda.rutadelivery.ui.theme.Navy
+import com.tienda.rutadelivery.ui.theme.NavyIndicator
 
 @Composable
 fun PerfilScreen(
@@ -26,31 +28,37 @@ fun PerfilScreen(
 ) {
     Scaffold(
         bottomBar = {
-            NavigationBar(containerColor = Color(0xFF0D1B3E)) {
+            NavigationBar(containerColor = Navy) {
                 NavigationBarItem(
                     selected = false,
                     onClick = onNavigateToMap,
                     icon = { Icon(Icons.Default.LocationOn, contentDescription = "Map", tint = Color.Gray) },
-                    label = { Text("MAP", color = Color.Gray, fontSize = 10.sp) },
-                    colors = NavigationBarItemDefaults.colors(indicatorColor = Color(0xFF1A2E5A))
+                    label = { Text("MAPA", color = Color.Gray, fontSize = 10.sp) },
+                    colors = NavigationBarItemDefaults.colors(
+                        indicatorColor = NavyIndicator
+                    )
                 )
                 NavigationBarItem(
                     selected = false,
                     onClick = onNavigateToRuta,
                     icon = { Icon(Icons.Default.Search, contentDescription = "Routes", tint = Color.Gray) },
-                    label = { Text("ROUTES", color = Color.Gray, fontSize = 10.sp) },
-                    colors = NavigationBarItemDefaults.colors(indicatorColor = Color(0xFF1A2E5A))
+                    label = { Text("RUTAS", color = Color.Gray, fontSize = 10.sp) },
+                    colors = NavigationBarItemDefaults.colors(
+                        indicatorColor = NavyIndicator
+                    )
                 )
                 NavigationBarItem(
                     selected = true,
                     onClick = onNavigateToPerfil,
                     icon = { Icon(Icons.Default.Person, contentDescription = "Profile", tint = Color.White) },
-                    label = { Text("PROFILE", color = Color.White, fontSize = 10.sp) },
-                    colors = NavigationBarItemDefaults.colors(indicatorColor = Color(0xFF1A2E5A))
+                    label = { Text("PERFIL", color = Color.White, fontSize = 10.sp) },
+                    colors = NavigationBarItemDefaults.colors(
+                        indicatorColor = NavyIndicator
+                    )
                 )
             }
         }
-    ) { paddingValues ->
+    )  { paddingValues ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
