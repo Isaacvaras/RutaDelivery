@@ -17,8 +17,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tienda.rutadelivery.model.Parada
 import com.tienda.rutadelivery.ui.theme.Navy
 import com.tienda.rutadelivery.ui.theme.NavyIndicator
+import androidx.compose.foundation.lazy.items
+import com.tienda.rutadelivery.ui.theme.Cyan
 
 @Composable
 fun RutaScreen(
@@ -132,15 +135,24 @@ fun RutaScreen(
 
             // Paradas
             val paradas = listOf(
-                Triple("1", "Av. Larco 456, Miraflores", "Carlos Rodriguez"),
-                Triple("2", "Calle Libertad 123, San Isidro", "Elena Valdivia"),
-                Triple("3", "Av. Javier Prado 210, Surco", "Mario Vargas"),
-                Triple("4", "Calle Alcantores 322, Miraflores", "Sofia Mendez"),
-                Triple("5", "Av. Brasil 1450, Pueblo Libre", "Pedro Soria")
+                Parada("1", "Carlos Rodriguez", "Av. Larco 456, Miraflores", "08:00 AM"),
+                Parada("2", "Elena Valdivia", "Calle Libertad 123, San Isidro", "08:10 AM"),
+                Parada("3", "Mario Vargas", "Av. Javier Prado 210, Surco", "08:20 AM"),
+                Parada("4", "Sofia Mendez", "Calle Alcantores 322, Miraflores", "08:30 AM"),
+                Parada("5", "Pedro Soria", "Av. Brasil 1450, Pueblo Libre", "08:40 AM"),
+                Parada("6", "Lucia Fernandez", "Av. Arequipa 789, Lince", "08:50 AM"),
+                Parada("7", "Jorge Castillo", "Calle Los Pinos 456, San Borja", "09:00 AM"),
+                Parada("8", "Andrea Ruiz", "Av. Primavera 1234, Surco", "09:10 AM"),
+                Parada("9", "Luis Gutierrez", "Av. La Marina 2300, San Miguel", "09:20 AM"),
+                Parada("10", "Patricia Salazar", "Jr. de la Union 567, Cercado de Lima", "09:30 AM"),
+                Parada("11", "Diego Ramos", "Av. Universitaria 1500, Los Olivos", "09:40 AM"),
+                Parada("12", "Carmen Torres", "Calle Los Olivos 321, Independencia", "09:50 AM"),
+                Parada("13", "Fernando Vega", "Av. Benavides 890, Miraflores", "10:00 AM"),
+                Parada("14", "Rosa Chavez", "Calle Las Flores 654, Barranco", "10:10 AM"),
+                Parada("15", "Miguel Angel Perez", "Av. Faucett 1200, Callao", "10:20 AM")
             )
 
-            items(paradas.size) { index ->
-                val parada = paradas[index]
+            items(paradas) { parada ->
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
@@ -159,35 +171,41 @@ fun RutaScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = parada.first,
+                                text = parada.id,
                                 color = Color.White,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp
                             )
                         }
+
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = parada.third,
+                                text = parada.nombreUsuario,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp,
-                                color = Color(0xFF0D1B3E)
+                                color = Navy
                             )
                             Text(
-                                text = parada.second,
+                                text = parada.direccion,
                                 fontSize = 12.sp,
                                 color = Color.Gray
                             )
+                            Text(
+                                text = parada.horaLlegada,
+                                fontSize = 12.sp,
+                                color = Cyan
+                            )
                         }
+
                         Icon(
                             Icons.Default.LocationOn,
                             contentDescription = null,
-                            tint = Color(0xFF0D1B3E),
+                            tint = Navy,
                             modifier = Modifier.size(20.dp)
                         )
                     }
                 }
             }
-
             item {
                 Spacer(modifier = Modifier.height(8.dp))
 
