@@ -24,3 +24,5 @@ val TextPrimary  = Navy
 val TextHint     = Color(0xFF9E9E9E)
 val TextError    = Color(0xFFD32F2F)
 val HintGray   = Color(0xFF9E9E9E)
+
+val Blue = Color(0xFF3366CC)
