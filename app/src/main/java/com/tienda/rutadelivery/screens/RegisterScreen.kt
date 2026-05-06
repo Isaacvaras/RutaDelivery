@@ -2,206 +2,306 @@ package com.tienda.rutadelivery.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tienda.rutadelivery.ui.components.FieldLabel
+import com.tienda.rutadelivery.ui.components.StyledTextField
+import com.tienda.rutadelivery.ui.components.individual.DatePickerMenu
+import com.tienda.rutadelivery.ui.theme.BgPage
+import com.tienda.rutadelivery.ui.theme.HintGray
+import com.tienda.rutadelivery.ui.theme.Navy
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
-    onBack: () -> Unit = {}
+    onBack: () -> Unit = {},
+    onRegister: (nombre: String, correo: String, dni: String, password: String) -> Unit = { _, _, _, _ -> }
 ) {
+    var nombre by remember { mutableStateOf("") }
+    var correo by remember { mutableStateOf("") }
+    var dni by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var confirmPw by remember { mutableStateOf("") }
+
+    var passwordVisible by remember { mutableStateOf(false) }
+    var confirmPwVisible by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
+
+    val datePickerState = rememberDatePickerState()
+    val fechaNacimiento by remember {
+        derivedStateOf {
+            datePickerState.selectedDateMillis?.let { millis ->
+                SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(millis))
+            } ?: ""
+        }
+    }
+    val passwordsMatch by remember {
+        derivedStateOf { confirmPw.isEmpty() || password == confirmPw }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFEEF1F5)),
+            .background(BgPage),
         contentAlignment = Alignment.Center
     ) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(24.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(8.dp)
+                .padding(horizontal = 20.dp, vertical = 24.dp),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = androidx.compose.ui.graphics.Color.White),
+            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
         ) {
             Column(
-                modifier = Modifier.padding(24.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                modifier = Modifier
+                    .padding(horizontal = 24.dp, vertical = 20.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                // Botón volver
                 IconButton(
                     onClick = onBack,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(36.dp)
                 ) {
                     Icon(
-                        Icons.Default.ArrowBack,
+                        imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Volver",
-                        tint = Color(0xFF0D1B3E)
+                        tint = Navy
                     )
                 }
 
-                // Título
+                Spacer(Modifier.height(4.dp))
+
                 Text(
                     text = "Crear Cuenta",
-                    fontSize = 28.sp,
+                    fontSize = 26.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF0D1B3E)
+                    color = Navy
                 )
                 Text(
                     text = "Completa tus datos para registrarte.",
-                    fontSize = 14.sp,
-                    color = Color.Gray
+                    fontSize = 13.sp,
+                    color = HintGray
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(Modifier.height(12.dp))
 
-                // Nombre
-                Text(
-                    text = "NOMBRE COMPLETO",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF0D1B3E),
-                    letterSpacing = 1.sp
+                //DNI
+                FieldLabel("DNI")
+                Spacer(Modifier.height(4.dp))
+                StyledTextField(
+                    value = dni,
+                    onValueChange = { if (it.length <= 8) dni = it.filter(Char::isDigit) },
+                    placeholder = "72773130",
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                 )
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp)
-                        .background(Color(0xFFF0F0F0), RoundedCornerShape(10.dp)),
-                    contentAlignment = Alignment.CenterStart
-                ) {
-                    Text(
-                        text = "  Tu nombre",
-                        color = Color.Gray,
-                        fontSize = 14.sp
+
+                Spacer(Modifier.height(8.dp))
+
+                // Fecha de nacimiento
+                FieldLabel("FECHA DE NACIMIENTO")
+                Spacer(Modifier.height(4.dp))
+                Box {
+                    StyledTextField(
+                        value = fechaNacimiento,
+                        onValueChange = {},
+                        placeholder = "DD/MM/AAAA",
+                        readOnly = true,
+                        trailingIcon = {
+                            IconButton(onClick = { showDatePicker = true }) {
+                                Icon(
+                                    imageVector = Icons.Default.CalendarMonth,
+                                    contentDescription = "Seleccionar fecha",
+                                    tint = Navy
+                                )
+                            }
+                        }
+                    )
+                    DatePickerMenu(
+                        expanded = showDatePicker,
+                        onDismissRequest = { showDatePicker = false },
+                        state = datePickerState,
+                        offset = DpOffset(0.dp, 4.dp)
                     )
                 }
 
-                // Correo
-                Text(
-                    text = "CORREO ELECTRÓNICO",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF0D1B3E),
-                    letterSpacing = 1.sp
+                Spacer(Modifier.height(8.dp))
+
+                // Nombre completo
+                FieldLabel("NOMBRE COMPLETO")
+                Spacer(Modifier.height(4.dp))
+                StyledTextField(
+                    value = nombre,
+                    onValueChange = { nombre = it },
+                    placeholder = "Juan Pérez García",
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
                 )
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp)
-                        .background(Color(0xFFF0F0F0), RoundedCornerShape(10.dp)),
-                    contentAlignment = Alignment.CenterStart
-                ) {
-                    Text(
-                        text = "  nombre@horizonte.com",
-                        color = Color.Gray,
-                        fontSize = 14.sp
-                    )
-                }
+
+                Spacer(Modifier.height(8.dp))
+
+                // Correo electrónico
+                FieldLabel("CORREO ELECTRÓNICO")
+                Spacer(Modifier.height(4.dp))
+                StyledTextField(
+                    value = correo,
+                    onValueChange = { correo = it },
+                    placeholder = "example@gmail.com",
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                )
+
+                Spacer(Modifier.height(8.dp))
 
                 // Contraseña
-                Text(
-                    text = "CONTRASEÑA",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF0D1B3E),
-                    letterSpacing = 1.sp
+                FieldLabel("CONTRASEÑA")
+                Spacer(Modifier.height(4.dp))
+                StyledTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    placeholder = "Mínimo 8 caracteres",
+                    visualTransformation = if (passwordVisible)
+                        VisualTransformation.None else PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    trailingIcon = {
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                            Icon(
+                                imageVector = if (passwordVisible)
+                                    Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                contentDescription = if (passwordVisible)
+                                    "Ocultar contraseña" else "Mostrar contraseña",
+                                tint = HintGray
+                            )
+                        }
+                    }
                 )
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp)
-                        .background(Color(0xFFF0F0F0), RoundedCornerShape(10.dp)),
-                    contentAlignment = Alignment.CenterStart
-                ) {
+
+                Spacer(Modifier.height(8.dp))
+
+                // Confirmar contraseña
+                FieldLabel("CONFIRMAR CONTRASEÑA")
+                Spacer(Modifier.height(4.dp))
+                StyledTextField(
+                    value = confirmPw,
+                    onValueChange = { confirmPw = it },
+                    placeholder = "Repite tu contraseña",
+                    visualTransformation = if (confirmPwVisible)
+                        VisualTransformation.None else PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    isError = !passwordsMatch,
+                    trailingIcon = {
+                        IconButton(onClick = { confirmPwVisible = !confirmPwVisible }) {
+                            Icon(
+                                imageVector = if (confirmPwVisible)
+                                    Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                contentDescription = if (confirmPwVisible)
+                                    "Ocultar contraseña" else "Mostrar contraseña",
+                                tint = HintGray
+                            )
+                        }
+                    }
+                )
+
+                if (!passwordsMatch) {
                     Text(
-                        text = "  ••••••••",
-                        color = Color.Gray,
-                        fontSize = 18.sp
+                        text = "Las contraseñas no coinciden",
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(start = 4.dp)
                     )
                 }
 
-                // Confirmar Contraseña
-                Text(
-                    text = "CONFIRMAR CONTRASEÑA",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF0D1B3E),
-                    letterSpacing = 1.sp
-                )
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp)
-                        .background(Color(0xFFF0F0F0), RoundedCornerShape(10.dp)),
-                    contentAlignment = Alignment.CenterStart
-                ) {
-                    Text(
-                        text = "  ••••••••",
-                        color = Color.Gray,
-                        fontSize = 18.sp
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(Modifier.height(20.dp))
 
                 // Botón Registrarse
+                val formValid = nombre.isNotBlank()
+                        && correo.isNotBlank()
+                        && dni.isNotBlank()
+                        && password.isNotBlank()
+                        && passwordsMatch
+                        && confirmPw.isNotBlank()
+
                 Button(
-                    onClick = onBack,
+                    onClick = { onRegister(nombre, correo, dni, password) },
+                    enabled = formValid,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(52.dp),
-                    shape = RoundedCornerShape(10.dp),
+                    shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF0D1B3E)
+                        containerColor         = Navy,
+                        disabledContainerColor = Navy.copy(alpha = 0.4f)
                     )
                 ) {
                     Text(
                         text = "REGISTRARSE",
                         fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
                         letterSpacing = 2.sp
                     )
                 }
 
+                Spacer(Modifier.height(4.dp))
+
                 // Volver al login
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = "¿Ya tienes una cuenta? ",
                         fontSize = 13.sp,
-                        color = Color.Gray
+                        color = HintGray
                     )
                     TextButton(
                         onClick = onBack,
-                        contentPadding = PaddingValues(0.dp)
+                        contentPadding = PaddingValues(horizontal = 4.dp)
                     ) {
                         Text(
                             text = "Iniciar sesión",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF0D1B3E)
+                            color = Navy
                         )
                     }
                 }
+
+                Spacer(Modifier.height(4.dp))
             }
         }
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true)
+@Preview(showBackground = true, showSystemUi = true, name = "Register - Normal")
 @Composable
 fun RegisterScreenPreview() {
     MaterialTheme { RegisterScreen() }
 }
+/*
+@Preview(showBackground = true, widthDp = 360, heightDp = 640, name = "Register - Small")
+@Composable
+fun RegisterScreenSmallPreview() {
+    MaterialTheme { RegisterScreen() }
+}
+ */

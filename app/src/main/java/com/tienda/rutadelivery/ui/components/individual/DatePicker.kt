@@ -1,4 +1,4 @@
-package com.tienda.rutadelivery.ui.components
+package com.tienda.rutadelivery.ui.components.individual
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
