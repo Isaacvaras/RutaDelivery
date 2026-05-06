@@ -29,6 +29,31 @@ fun RutaScreen(
     onNavigateToRuta: () -> Unit = {},
     onNavigateToPerfil: () -> Unit = {}
 ) {
+    // Paradas
+    val paradas = listOf(
+        Parada("1", "Carlos Rodriguez", "Av. Larco 456, Miraflores", "08:00 AM"),
+        Parada("2", "Elena Valdivia", "Calle Libertad 123, San Isidro", "08:10 AM"),
+        Parada("3", "Mario Vargas", "Av. Javier Prado 210, Surco", "08:20 AM"),
+        Parada("4", "Sofia Mendez", "Calle Alcantores 322, Miraflores", "08:30 AM"),
+        Parada("5", "Pedro Soria", "Av. Brasil 1450, Pueblo Libre", "08:40 AM"),
+        Parada("6", "Lucia Fernandez", "Av. Arequipa 789, Lince", "08:50 AM"),
+        Parada("7", "Jorge Castillo", "Calle Los Pinos 456, San Borja", "09:00 AM"),
+        Parada("8", "Andrea Ruiz", "Av. Primavera 1234, Surco", "09:10 AM"),
+        Parada("9", "Luis Gutierrez", "Av. La Marina 2300, San Miguel", "09:20 AM"),
+        Parada("10", "Patricia Salazar", "Jr. de la Union 567, Cercado de Lima", "09:30 AM"),
+        Parada("11", "Diego Ramos", "Av. Universitaria 1500, Los Olivos", "09:40 AM"),
+        Parada("12", "Carmen Torres", "Calle Los Olivos 321, Independencia", "09:50 AM"),
+        Parada("13", "Fernando Vega", "Av. Benavides 890, Miraflores", "10:00 AM"),
+        Parada("14", "Rosa Chavez", "Calle Las Flores 654, Barranco", "10:10 AM"),
+        Parada("15", "Miguel Angel Perez", "Av. Faucett 1200, Callao", "10:20 AM")
+    )
+
+    val totalMinutos = if (paradas.isNotEmpty()) {
+        val inicio = paradas.first().horaLlegada.toMinutes()
+        val fin = paradas.last().horaLlegada.toMinutes()
+        fin - inicio
+    } else 0
+
     Scaffold(
         bottomBar = {
             NavigationBar(containerColor = Navy) {
@@ -107,7 +132,7 @@ fun RutaScreen(
                             color = Color.Gray
                         )
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("1h 45m", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            Text(formatMinutes(totalMinutos), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
                             Text("Tiempo est.", fontSize = 11.sp, color = Color.Gray)
                         }
                         Divider(
@@ -117,7 +142,7 @@ fun RutaScreen(
                             color = Color.Gray
                         )
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("5", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            Text(paradas.size.toString(), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
                             Text("Paradas", fontSize = 11.sp, color = Color.Gray)
                         }
                     }
@@ -133,24 +158,7 @@ fun RutaScreen(
                 )
             }
 
-            // Paradas
-            val paradas = listOf(
-                Parada("1", "Carlos Rodriguez", "Av. Larco 456, Miraflores", "08:00 AM"),
-                Parada("2", "Elena Valdivia", "Calle Libertad 123, San Isidro", "08:10 AM"),
-                Parada("3", "Mario Vargas", "Av. Javier Prado 210, Surco", "08:20 AM"),
-                Parada("4", "Sofia Mendez", "Calle Alcantores 322, Miraflores", "08:30 AM"),
-                Parada("5", "Pedro Soria", "Av. Brasil 1450, Pueblo Libre", "08:40 AM"),
-                Parada("6", "Lucia Fernandez", "Av. Arequipa 789, Lince", "08:50 AM"),
-                Parada("7", "Jorge Castillo", "Calle Los Pinos 456, San Borja", "09:00 AM"),
-                Parada("8", "Andrea Ruiz", "Av. Primavera 1234, Surco", "09:10 AM"),
-                Parada("9", "Luis Gutierrez", "Av. La Marina 2300, San Miguel", "09:20 AM"),
-                Parada("10", "Patricia Salazar", "Jr. de la Union 567, Cercado de Lima", "09:30 AM"),
-                Parada("11", "Diego Ramos", "Av. Universitaria 1500, Los Olivos", "09:40 AM"),
-                Parada("12", "Carmen Torres", "Calle Los Olivos 321, Independencia", "09:50 AM"),
-                Parada("13", "Fernando Vega", "Av. Benavides 890, Miraflores", "10:00 AM"),
-                Parada("14", "Rosa Chavez", "Calle Las Flores 654, Barranco", "10:10 AM"),
-                Parada("15", "Miguel Angel Perez", "Av. Faucett 1200, Callao", "10:20 AM")
-            )
+
 
             items(paradas) { parada ->
                 Card(
@@ -228,6 +236,28 @@ fun RutaScreen(
             }
         }
     }
+}
+
+
+fun String.toMinutes(): Int {
+    val parts = this.split(" ")
+    val time = parts[0]
+    val amPm = parts[1]
+
+    val (hourStr, minuteStr) = time.split(":")
+    var hour = hourStr.toInt()
+    val minute = minuteStr.toInt()
+
+    if (amPm == "PM" && hour != 12) hour += 12
+    if (amPm == "AM" && hour == 12) hour = 0
+
+    return hour * 60 + minute
+}
+
+fun formatMinutes(min: Int): String {
+    val h = min / 60
+    val m = min % 60
+    return "${h}h ${m}m"
 }
 
 @Preview(showBackground = true, showSystemUi = true)

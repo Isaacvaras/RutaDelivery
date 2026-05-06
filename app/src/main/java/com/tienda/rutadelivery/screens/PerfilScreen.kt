@@ -95,23 +95,26 @@ fun PerfilScreen(
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF0D1B3E)
                         )
-                        Text(
-                            text = "Repartidor Senior",
-                            fontSize = 13.sp,
-                            color = Color.Gray
-                        )
-                        Box(
-                            modifier = Modifier
-                                .background(Color(0xFFE8F5E9), RoundedCornerShape(12.dp))
-                                .padding(horizontal = 12.dp, vertical = 4.dp)
-                        ) {
-                            Text(
-                                text = "● Activo",
-                                fontSize = 12.sp,
-                                color = Color(0xFF2E7D32),
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
+                        /*
+                       Text(
+                           text = "Repartidor Senior",
+                           fontSize = 13.sp,
+                           color = Color.Gray
+                       )
+
+                       Box(
+                           modifier = Modifier
+                               .background(Color(0xFFE8F5E9), RoundedCornerShape(12.dp))
+                               .padding(horizontal = 12.dp, vertical = 4.dp)
+                       ) {
+                           Text(
+                               text = "● Activo",
+                               fontSize = 12.sp,
+                               color = Color(0xFF2E7D32),
+                               fontWeight = FontWeight.Bold
+                           )
+                       }
+                        */
                     }
                 }
 
