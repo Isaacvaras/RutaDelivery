@@ -53,6 +53,7 @@ fun MapScreen(
     val estacionesFiltradas = if (filtroSeleccionado == "Todos") estaciones
     else estaciones.filter { it.tipo == filtroSeleccionado }
 
+    // Dialog detalle estación
     estacionSeleccionada?.let { estacion ->
         AlertDialog(
             onDismissRequest = { estacionSeleccionada = null },
@@ -122,14 +123,14 @@ fun MapScreen(
             verticalArrangement = Arrangement.spacedBy(0.dp)
         ) {
             item {
-
+                // Mapa simulado
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(280.dp)
                         .background(Color(0xFF7EC8C8))
                 ) {
-
+                    // Calles simuladas
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -145,7 +146,7 @@ fun MapScreen(
                             .align(Alignment.Center)
                     )
 
-
+                    // Marcadores estaciones
                     estaciones.forEachIndexed { index, estacion ->
                         val offsetX = (20 + (index * 67) % 280).dp
                         val offsetY = (40 + (index * 43) % 180).dp
@@ -157,7 +158,7 @@ fun MapScreen(
                         )
                     }
 
-
+                    // Punto usuario pulsante
                     Box(
                         modifier = Modifier
                             .align(Alignment.Center)
@@ -181,7 +182,7 @@ fun MapScreen(
                         )
                     }
 
-
+                    // Label ubicación actual
                     Card(
                         modifier = Modifier
                             .align(Alignment.BottomStart)
@@ -197,7 +198,7 @@ fun MapScreen(
                         )
                     }
 
-
+                    // Leyenda
                     Card(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
@@ -256,7 +257,7 @@ fun MapScreen(
                 }
             }
 
-
+            // Lista estaciones
             items(estacionesFiltradas.size) { index ->
                 val estacion = estacionesFiltradas[index]
                 Card(

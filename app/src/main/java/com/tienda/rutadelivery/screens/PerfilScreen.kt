@@ -118,18 +118,18 @@ fun PerfilScreen(
                         horizontalArrangement = Arrangement.SpaceAround
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("48", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            Text("2", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.White)
                             Text("Rutas", fontSize = 11.sp, color = Color.Gray)
                         }
                         Divider(modifier = Modifier.height(40.dp).width(1.dp), color = Color.Gray)
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("312 km", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            Text("10 km", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.White)
                             Text("Recorridos", fontSize = 11.sp, color = Color.Gray)
                         }
                         Divider(modifier = Modifier.height(40.dp).width(1.dp), color = Color.Gray)
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("4.8 ⭐", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                            Text("Rating", fontSize = 11.sp, color = Color.Gray)
+                            Text("5 dias 🔥", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            Text("Racha", fontSize = 11.sp, color = Color.Gray)
                         }
                     }
                 }
@@ -145,11 +145,11 @@ fun PerfilScreen(
             }
 
             val infoItems = listOf(
-                Pair("Correo", "isaac.varas@citybike.pe"),
-                Pair("Teléfono", "+51 987 654 321"),
+                Pair("Correo", "isaac.v@citybike.pe"),
+                Pair("Teléfono", "+51 123 123 123"),
                 Pair("Zona", "Lima - Miraflores"),
                 Pair("Bicicleta", "Trek FX3 - Azul"),
-                Pair("Miembro desde", "Enero 2024"),
+                Pair("Miembro desde", "Enero 2026"),
                 Pair("Plan", "Premium 🌟")
             )
 
@@ -175,7 +175,6 @@ fun PerfilScreen(
 
             item {
                 Spacer(modifier = Modifier.height(8.dp))
-
                 Button(
                     onClick = onLogout,
                     modifier = Modifier
@@ -190,7 +189,6 @@ fun PerfilScreen(
                         fontSize = 14.sp
                     )
                 }
-
                 Spacer(modifier = Modifier.height(16.dp))
             }
         }

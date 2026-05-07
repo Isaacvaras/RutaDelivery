@@ -53,11 +53,13 @@ fun CityBikeApp() {
         )
         is Screen.Map -> MapScreen(
             onNavigateToMap = { currentScreen = Screen.Map },
-            onNavigateToUbicaciones = { currentScreen = Screen.Ubicaciones }
+            onNavigateToUbicaciones = { currentScreen = Screen.Ubicaciones },
+            onNavigateToPerfil = { currentScreen = Screen.Perfil }
         )
         is Screen.Ubicaciones -> UbicacionesScreen(
             onNavigateToMap = { currentScreen = Screen.Map },
-            onNavigateToUbicaciones = { currentScreen = Screen.Ubicaciones }
+            onNavigateToUbicaciones = { currentScreen = Screen.Ubicaciones },
+            onNavigateToPerfil = { currentScreen = Screen.Perfil }
         )
         is Screen.Perfil -> PerfilScreen(
             onNavigateToMap = { currentScreen = Screen.Map },
