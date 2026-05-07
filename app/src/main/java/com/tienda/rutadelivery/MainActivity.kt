@@ -13,17 +13,17 @@ import androidx.compose.runtime.setValue
 import com.tienda.rutadelivery.screens.LoginScreen
 import com.tienda.rutadelivery.screens.RegisterScreen
 import com.tienda.rutadelivery.screens.MapScreen
-import com.tienda.rutadelivery.screens.OrdenScreen
+import com.tienda.rutadelivery.screens.UbicacionesScreen
 import com.tienda.rutadelivery.screens.PerfilScreen
 import com.tienda.rutadelivery.screens.RutaScreen
 
 sealed class Screen {
-    object Login    : Screen()
-    object Register : Screen()
-    object Map      : Screen()
-    object Orden    : Screen()
-    object Ruta     : Screen()
-    object Perfil   : Screen()
+    object Login       : Screen()
+    object Register    : Screen()
+    object Map         : Screen()
+    object Ubicaciones : Screen()
+    object Perfil      : Screen()
+    object Ruta        : Screen()
 }
 
 class MainActivity : ComponentActivity() {
@@ -32,14 +32,14 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MaterialTheme {
-                RutaDeliveryApp()
+                CityBikeApp()
             }
         }
     }
 }
 
 @Composable
-fun RutaDeliveryApp() {
+fun CityBikeApp() {
     var currentScreen by remember { mutableStateOf<Screen>(Screen.Login) }
 
     when (currentScreen) {
@@ -48,27 +48,26 @@ fun RutaDeliveryApp() {
             onRegister = { currentScreen = Screen.Register }
         )
         is Screen.Register -> RegisterScreen(
-            onBack = { currentScreen = Screen.Login }
+            onBack = { currentScreen = Screen.Login },
+            onRegisterSuccess = { currentScreen = Screen.Login }
         )
         is Screen.Map -> MapScreen(
             onNavigateToMap = { currentScreen = Screen.Map },
-            onNavigateToRuta = { currentScreen = Screen.Ruta },
-            onNavigateToPerfil = { currentScreen = Screen.Perfil },
-            onVerOrden = { currentScreen = Screen.Orden }
+            onNavigateToUbicaciones = { currentScreen = Screen.Ubicaciones }
         )
-        is Screen.Orden -> OrdenScreen(
+        is Screen.Ubicaciones -> UbicacionesScreen(
             onNavigateToMap = { currentScreen = Screen.Map },
-            onNavigateToRuta = { currentScreen = Screen.Ruta },
-            onNavigateToPerfil = { currentScreen = Screen.Perfil }
-        )
-        is Screen.Ruta -> RutaScreen(
-            onNavigateToMap = { currentScreen = Screen.Map },
-            onNavigateToRuta = { currentScreen = Screen.Ruta },
-            onNavigateToPerfil = { currentScreen = Screen.Perfil }
+            onNavigateToUbicaciones = { currentScreen = Screen.Ubicaciones }
         )
         is Screen.Perfil -> PerfilScreen(
             onNavigateToMap = { currentScreen = Screen.Map },
-            onNavigateToRuta = { currentScreen = Screen.Ruta },
+            onNavigateToUbicaciones = { currentScreen = Screen.Ubicaciones },
+            onNavigateToPerfil = { currentScreen = Screen.Perfil },
+            onLogout = { currentScreen = Screen.Login }
+        )
+        is Screen.Ruta -> RutaScreen(
+            onNavigateToMap = { currentScreen = Screen.Map },
+            onNavigateToUbicaciones = { currentScreen = Screen.Ubicaciones },
             onNavigateToPerfil = { currentScreen = Screen.Perfil }
         )
     }

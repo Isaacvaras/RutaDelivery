@@ -17,48 +17,41 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.tienda.rutadelivery.ui.theme.Navy
-import com.tienda.rutadelivery.ui.theme.NavyIndicator
 
 @Composable
 fun PerfilScreen(
     onNavigateToMap: () -> Unit = {},
-    onNavigateToRuta: () -> Unit = {},
-    onNavigateToPerfil: () -> Unit = {}
+    onNavigateToUbicaciones: () -> Unit = {},
+    onNavigateToPerfil: () -> Unit = {},
+    onLogout: () -> Unit = {}
 ) {
     Scaffold(
         bottomBar = {
-            NavigationBar(containerColor = Navy) {
+            NavigationBar(containerColor = Color(0xFF0D1B3E)) {
                 NavigationBarItem(
                     selected = false,
                     onClick = onNavigateToMap,
                     icon = { Icon(Icons.Default.LocationOn, contentDescription = "Map", tint = Color.Gray) },
-                    label = { Text("MAPA", color = Color.Gray, fontSize = 10.sp) },
-                    colors = NavigationBarItemDefaults.colors(
-                        indicatorColor = NavyIndicator
-                    )
+                    label = { Text("MAP", color = Color.Gray, fontSize = 10.sp) },
+                    colors = NavigationBarItemDefaults.colors(indicatorColor = Color(0xFF1A2E5A))
                 )
                 NavigationBarItem(
                     selected = false,
-                    onClick = onNavigateToRuta,
-                    icon = { Icon(Icons.Default.Search, contentDescription = "Routes", tint = Color.Gray) },
-                    label = { Text("RUTAS", color = Color.Gray, fontSize = 10.sp) },
-                    colors = NavigationBarItemDefaults.colors(
-                        indicatorColor = NavyIndicator
-                    )
+                    onClick = onNavigateToUbicaciones,
+                    icon = { Icon(Icons.Default.Search, contentDescription = "Ubicaciones", tint = Color.Gray) },
+                    label = { Text("UBICACIONES", color = Color.Gray, fontSize = 10.sp) },
+                    colors = NavigationBarItemDefaults.colors(indicatorColor = Color(0xFF1A2E5A))
                 )
                 NavigationBarItem(
                     selected = true,
                     onClick = onNavigateToPerfil,
                     icon = { Icon(Icons.Default.Person, contentDescription = "Profile", tint = Color.White) },
-                    label = { Text("PERFIL", color = Color.White, fontSize = 10.sp) },
-                    colors = NavigationBarItemDefaults.colors(
-                        indicatorColor = NavyIndicator
-                    )
+                    label = { Text("PROFILE", color = Color.White, fontSize = 10.sp) },
+                    colors = NavigationBarItemDefaults.colors(indicatorColor = Color(0xFF1A2E5A))
                 )
             }
         }
-    )  { paddingValues ->
+    ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -79,42 +72,34 @@ fun PerfilScreen(
                         Box(
                             modifier = Modifier
                                 .size(90.dp)
-                                .background(Color(0xFF0D1B3E), RoundedCornerShape(45.dp)),
+                                .background(Color(0xFF1565C0), RoundedCornerShape(45.dp)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                Icons.Default.Person,
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.size(50.dp)
-                            )
+                            Text(text = "🚲", fontSize = 40.sp)
                         }
                         Text(
                             text = "Isaac Varas",
-                            fontSize = 20.sp,
+                            fontSize = 22.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF0D1B3E)
                         )
-                        /*
-                       Text(
-                           text = "Repartidor Senior",
-                           fontSize = 13.sp,
-                           color = Color.Gray
-                       )
-
-                       Box(
-                           modifier = Modifier
-                               .background(Color(0xFFE8F5E9), RoundedCornerShape(12.dp))
-                               .padding(horizontal = 12.dp, vertical = 4.dp)
-                       ) {
-                           Text(
-                               text = "● Activo",
-                               fontSize = 12.sp,
-                               color = Color(0xFF2E7D32),
-                               fontWeight = FontWeight.Bold
-                           )
-                       }
-                        */
+                        Text(
+                            text = "Ciclista Urbano",
+                            fontSize = 13.sp,
+                            color = Color.Gray
+                        )
+                        Box(
+                            modifier = Modifier
+                                .background(Color(0xFFE8F5E9), RoundedCornerShape(12.dp))
+                                .padding(horizontal = 12.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = "● Activo",
+                                fontSize = 12.sp,
+                                color = Color(0xFF2E7D32),
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
 
@@ -133,18 +118,18 @@ fun PerfilScreen(
                         horizontalArrangement = Arrangement.SpaceAround
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("142", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                            Text("Entregas", fontSize = 11.sp, color = Color.Gray)
+                            Text("48", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            Text("Rutas", fontSize = 11.sp, color = Color.Gray)
                         }
                         Divider(modifier = Modifier.height(40.dp).width(1.dp), color = Color.Gray)
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("4.9", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            Text("312 km", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            Text("Recorridos", fontSize = 11.sp, color = Color.Gray)
+                        }
+                        Divider(modifier = Modifier.height(40.dp).width(1.dp), color = Color.Gray)
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("4.8 ⭐", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.White)
                             Text("Rating", fontSize = 11.sp, color = Color.Gray)
-                        }
-                        Divider(modifier = Modifier.height(40.dp).width(1.dp), color = Color.Gray)
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("98%", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                            Text("A tiempo", fontSize = 11.sp, color = Color.Gray)
                         }
                     }
                 }
@@ -159,13 +144,13 @@ fun PerfilScreen(
                 )
             }
 
-            // Info items
             val infoItems = listOf(
-                Pair("Correo", "isaac.varas@horizonte.com"),
+                Pair("Correo", "isaac.varas@citybike.pe"),
                 Pair("Teléfono", "+51 987 654 321"),
-                Pair("Zona", "Lima Centro"),
-                Pair("Vehículo", "Moto - ABC-123"),
-                Pair("Turno", "07:00 - 15:00")
+                Pair("Zona", "Lima - Miraflores"),
+                Pair("Bicicleta", "Trek FX3 - Azul"),
+                Pair("Miembro desde", "Enero 2024"),
+                Pair("Plan", "Premium 🌟")
             )
 
             items(infoItems.size) { index ->
@@ -191,9 +176,8 @@ fun PerfilScreen(
             item {
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Botón cerrar sesión
                 Button(
-                    onClick = {},
+                    onClick = onLogout,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(52.dp),

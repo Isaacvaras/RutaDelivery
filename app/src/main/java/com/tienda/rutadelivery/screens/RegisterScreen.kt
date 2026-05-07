@@ -2,307 +2,253 @@ package com.tienda.rutadelivery.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.tienda.rutadelivery.ui.components.FieldLabel
-import com.tienda.rutadelivery.ui.components.StyledTextField
-import com.tienda.rutadelivery.ui.components.individual.DatePickerMenu
-import com.tienda.rutadelivery.ui.theme.BgPage
-import com.tienda.rutadelivery.ui.theme.HintGray
-import com.tienda.rutadelivery.ui.theme.Navy
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
     onBack: () -> Unit = {},
-    onRegister: (nombre: String, correo: String, dni: String, password: String) -> Unit = { _, _, _, _ -> }
+    onRegisterSuccess: () -> Unit = {}
 ) {
     var nombre by remember { mutableStateOf("") }
-    var correo by remember { mutableStateOf("") }
-    var dni by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var confirmPw by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    var error by remember { mutableStateOf("") }
+    var showDialog by remember { mutableStateOf(false) }
 
-    var passwordVisible by remember { mutableStateOf(false) }
-    var confirmPwVisible by remember { mutableStateOf(false) }
-    var showDatePicker by remember { mutableStateOf(false) }
 
-    val datePickerState = rememberDatePickerState()
-    val fechaNacimiento by remember {
-        derivedStateOf {
-            datePickerState.selectedDateMillis?.let { millis ->
-                SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(millis))
-            } ?: ""
-        }
-    }
-    val passwordsMatch by remember {
-        derivedStateOf { confirmPw.isEmpty() || password == confirmPw }
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = {
+                Text(
+                    text = "¡Registro exitoso! 🎉",
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF0D1B3E)
+                )
+            },
+            text = {
+                Text("Tu cuenta ha sido creada correctamente. Ya puedes iniciar sesión.")
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showDialog = false
+                        onRegisterSuccess()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0D1B3E))
+                ) {
+                    Text("Ir al Login")
+                }
+            }
+        )
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(BgPage),
+            .background(Color(0xFFEEF1F5)),
         contentAlignment = Alignment.Center
     ) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 24.dp),
-            shape = RoundedCornerShape(20.dp),
+                .padding(24.dp),
+            shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+            elevation = CardDefaults.cardElevation(8.dp)
         ) {
             Column(
-                modifier = Modifier
-                    .padding(horizontal = 24.dp, vertical = 20.dp)
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                modifier = Modifier.padding(24.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+
                 IconButton(
                     onClick = onBack,
-                    modifier = Modifier.size(36.dp)
+                    modifier = Modifier.size(32.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.ArrowBack,
+                        Icons.Default.ArrowBack,
                         contentDescription = "Volver",
-                        tint = Navy
+                        tint = Color(0xFF0D1B3E)
                     )
                 }
 
-                Spacer(Modifier.height(4.dp))
-
                 Text(
-                    text = "Crear Cuenta",
-                    fontSize = 26.sp,
+                    text = "Crear Cuenta 🚲",
+                    fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Navy
+                    color = Color(0xFF0D1B3E)
                 )
                 Text(
                     text = "Completa tus datos para registrarte.",
-                    fontSize = 13.sp,
-                    color = HintGray
+                    fontSize = 14.sp,
+                    color = Color.Gray
                 )
 
-                Spacer(Modifier.height(12.dp))
-
-                //DNI
-                FieldLabel("DNI")
-                Spacer(Modifier.height(4.dp))
-                StyledTextField(
-                    value = dni,
-                    onValueChange = { if (it.length <= 8) dni = it.filter(Char::isDigit) },
-                    placeholder = "72773130",
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                // Nombre
+                Text(
+                    text = "NOMBRE COMPLETO",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF0D1B3E),
+                    letterSpacing = 1.sp
                 )
-
-                Spacer(Modifier.height(8.dp))
-
-                // Fecha de nacimiento
-                FieldLabel("FECHA DE NACIMIENTO")
-                Spacer(Modifier.height(4.dp))
-                Box {
-                    StyledTextField(
-                        value = fechaNacimiento,
-                        onValueChange = {},
-                        placeholder = "DD/MM/AAAA",
-                        readOnly = true,
-                        trailingIcon = {
-                            IconButton(onClick = { showDatePicker = true }) {
-                                Icon(
-                                    imageVector = Icons.Default.CalendarMonth,
-                                    contentDescription = "Seleccionar fecha",
-                                    tint = Navy
-                                )
-                            }
-                        }
-                    )
-                    DatePickerMenu(
-                        expanded = showDatePicker,
-                        onDismissRequest = { showDatePicker = false },
-                        state = datePickerState,
-                        offset = DpOffset(0.dp, 4.dp)
-                    )
-                }
-
-                Spacer(Modifier.height(8.dp))
-
-                // Nombre completo
-                FieldLabel("NOMBRE COMPLETO")
-                Spacer(Modifier.height(4.dp))
-                StyledTextField(
+                OutlinedTextField(
                     value = nombre,
-                    onValueChange = { nombre = it },
-                    placeholder = "Juan Pérez García",
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+                    onValueChange = {
+                        nombre = it
+                        error = ""
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Tu nombre completo", color = Color.Gray) },
+                    singleLine = true,
+                    shape = RoundedCornerShape(10.dp)
                 )
 
-                Spacer(Modifier.height(8.dp))
 
-                // Correo electrónico
-                FieldLabel("CORREO ELECTRÓNICO")
-                Spacer(Modifier.height(4.dp))
-                StyledTextField(
-                    value = correo,
-                    onValueChange = { correo = it },
-                    placeholder = "example@gmail.com",
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                Text(
+                    text = "CORREO ELECTRÓNICO",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF0D1B3E),
+                    letterSpacing = 1.sp
+                )
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = {
+                        email = it
+                        error = ""
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("nombre@correo.com", color = Color.Gray) },
+                    singleLine = true,
+                    shape = RoundedCornerShape(10.dp)
                 )
 
-                Spacer(Modifier.height(8.dp))
 
-                // Contraseña
-                FieldLabel("CONTRASEÑA")
-                Spacer(Modifier.height(4.dp))
-                StyledTextField(
+                Text(
+                    text = "CONTRASEÑA",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF0D1B3E),
+                    letterSpacing = 1.sp
+                )
+                OutlinedTextField(
                     value = password,
-                    onValueChange = { password = it },
-                    placeholder = "Mínimo 8 caracteres",
-                    visualTransformation = if (passwordVisible)
-                        VisualTransformation.None else PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                    trailingIcon = {
-                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                            Icon(
-                                imageVector = if (passwordVisible)
-                                    Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                contentDescription = if (passwordVisible)
-                                    "Ocultar contraseña" else "Mostrar contraseña",
-                                tint = HintGray
-                            )
-                        }
-                    }
+                    onValueChange = {
+                        password = it
+                        error = ""
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Mínimo 6 caracteres", color = Color.Gray) },
+                    visualTransformation = PasswordVisualTransformation(),
+                    singleLine = true,
+                    shape = RoundedCornerShape(10.dp)
                 )
 
-                Spacer(Modifier.height(8.dp))
 
-                // Confirmar contraseña
-                FieldLabel("CONFIRMAR CONTRASEÑA")
-                Spacer(Modifier.height(4.dp))
-                StyledTextField(
-                    value = confirmPw,
-                    onValueChange = { confirmPw = it },
-                    placeholder = "Repite tu contraseña",
-                    visualTransformation = if (confirmPwVisible)
-                        VisualTransformation.None else PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                    isError = !passwordsMatch,
-                    trailingIcon = {
-                        IconButton(onClick = { confirmPwVisible = !confirmPwVisible }) {
-                            Icon(
-                                imageVector = if (confirmPwVisible)
-                                    Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                contentDescription = if (confirmPwVisible)
-                                    "Ocultar contraseña" else "Mostrar contraseña",
-                                tint = HintGray
-                            )
-                        }
-                    }
+                Text(
+                    text = "CONFIRMAR CONTRASEÑA",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF0D1B3E),
+                    letterSpacing = 1.sp
+                )
+                OutlinedTextField(
+                    value = confirmPassword,
+                    onValueChange = {
+                        confirmPassword = it
+                        error = ""
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Repite tu contraseña", color = Color.Gray) },
+                    visualTransformation = PasswordVisualTransformation(),
+                    singleLine = true,
+                    shape = RoundedCornerShape(10.dp)
                 )
 
-                if (!passwordsMatch) {
+
+                if (error.isNotEmpty()) {
                     Text(
-                        text = "Las contraseñas no coinciden",
-                        fontSize = 11.sp,
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.padding(start = 4.dp)
+                        text = error,
+                        color = Color.Red,
+                        fontSize = 12.sp
                     )
                 }
 
-                Spacer(Modifier.height(20.dp))
-
-                // Botón Registrarse
-                val formValid = nombre.isNotBlank()
-                        && correo.isNotBlank()
-                        && dni.isNotBlank()
-                        && password.isNotBlank()
-                        && passwordsMatch
-                        && confirmPw.isNotBlank()
 
                 Button(
-                    onClick = { onRegister(nombre, correo, dni, password) },
-                    enabled = formValid,
+                    onClick = {
+                        when {
+                            nombre.isEmpty() || email.isEmpty() ||
+                                    password.isEmpty() || confirmPassword.isEmpty() ->
+                                error = "Por favor completa todos los campos"
+                            !email.contains("@") ->
+                                error = "El correo no es válido"
+                            password.length < 6 ->
+                                error = "La contraseña debe tener mínimo 6 caracteres"
+                            password != confirmPassword ->
+                                error = "Las contraseñas no coinciden"
+                            else -> showDialog = true
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(52.dp),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(10.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor         = Navy,
-                        disabledContainerColor = Navy.copy(alpha = 0.4f)
+                        containerColor = Color(0xFF0D1B3E)
                     )
                 ) {
                     Text(
                         text = "REGISTRARSE",
                         fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp,
                         letterSpacing = 2.sp
                     )
                 }
 
-                Spacer(Modifier.height(4.dp))
 
-                // Volver al login
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
+                    horizontalArrangement = Arrangement.Center
                 ) {
                     Text(
                         text = "¿Ya tienes una cuenta? ",
                         fontSize = 13.sp,
-                        color = HintGray
+                        color = Color.Gray
                     )
                     TextButton(
                         onClick = onBack,
-                        contentPadding = PaddingValues(horizontal = 4.dp)
+                        contentPadding = PaddingValues(0.dp)
                     ) {
                         Text(
                             text = "Iniciar sesión",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Navy
+                            color = Color(0xFF0D1B3E)
                         )
                     }
                 }
-
-                Spacer(Modifier.height(4.dp))
             }
         }
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true, name = "Register - Normal")
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun RegisterScreenPreview() {
     MaterialTheme { RegisterScreen() }
 }
-/*
-@Preview(showBackground = true, widthDp = 360, heightDp = 640, name = "Register - Small")
-@Composable
-fun RegisterScreenSmallPreview() {
-    MaterialTheme { RegisterScreen() }
-}
- */
