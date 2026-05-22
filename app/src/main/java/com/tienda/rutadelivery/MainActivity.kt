@@ -12,18 +12,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.tienda.rutadelivery.screens.LoginScreen
 import com.tienda.rutadelivery.screens.RegisterScreen
+import com.tienda.rutadelivery.screens.HomeScreen
 import com.tienda.rutadelivery.screens.MapScreen
-import com.tienda.rutadelivery.screens.UbicacionesScreen
 import com.tienda.rutadelivery.screens.PerfilScreen
 import com.tienda.rutadelivery.screens.RutaScreen
+import com.tienda.rutadelivery.screens.AlquilerScreen
 
 sealed class Screen {
-    object Login       : Screen()
-    object Register    : Screen()
-    object Map         : Screen()
-    object Ubicaciones : Screen()
-    object Perfil      : Screen()
-    object Ruta        : Screen()
+    object Login    : Screen()
+    object Home     : Screen()
+    object Mapa     : Screen()
+    object Rutas    : Screen()
+    object Alquiler : Screen()
+    object Perfil   : Screen()
+    object Register : Screen()
 }
 
 class MainActivity : ComponentActivity() {
@@ -44,33 +46,44 @@ fun CityBikeApp() {
 
     when (currentScreen) {
         is Screen.Login -> LoginScreen(
-            onLogin = { currentScreen = Screen.Map },
+            onLogin = { currentScreen = Screen.Home },
             onRegister = { currentScreen = Screen.Register }
         )
         is Screen.Register -> RegisterScreen(
             onBack = { currentScreen = Screen.Login },
-            onRegisterSuccess = { currentScreen = Screen.Login }
+            onRegisterSuccess = { currentScreen = Screen.Home }
         )
-        is Screen.Map -> MapScreen(
-            onNavigateToMap = { currentScreen = Screen.Map },
-            onNavigateToUbicaciones = { currentScreen = Screen.Ubicaciones },
+        is Screen.Home -> HomeScreen(
+            onNavigateToMapa = { currentScreen = Screen.Mapa },
+            onNavigateToRutas = { currentScreen = Screen.Rutas },
+            onNavigateToAlquiler = { currentScreen = Screen.Alquiler },
             onNavigateToPerfil = { currentScreen = Screen.Perfil }
         )
-        is Screen.Ubicaciones -> UbicacionesScreen(
-            onNavigateToMap = { currentScreen = Screen.Map },
-            onNavigateToUbicaciones = { currentScreen = Screen.Ubicaciones },
+        is Screen.Mapa -> MapScreen(
+            onNavigateToHome = { currentScreen = Screen.Home },
+            onNavigateToRutas = { currentScreen = Screen.Rutas },
+            onNavigateToAlquiler = { currentScreen = Screen.Alquiler },
+            onNavigateToPerfil = { currentScreen = Screen.Perfil }
+        )
+        is Screen.Rutas -> RutaScreen(
+            onNavigateToHome = { currentScreen = Screen.Home },
+            onNavigateToMapa = { currentScreen = Screen.Mapa },
+            onNavigateToAlquiler = { currentScreen = Screen.Alquiler },
+            onNavigateToPerfil = { currentScreen = Screen.Perfil }
+        )
+        is Screen.Alquiler -> AlquilerScreen(
+            onNavigateToHome = { currentScreen = Screen.Home },
+            onNavigateToMapa = { currentScreen = Screen.Mapa },
+            onNavigateToRutas = { currentScreen = Screen.Rutas },
             onNavigateToPerfil = { currentScreen = Screen.Perfil }
         )
         is Screen.Perfil -> PerfilScreen(
-            onNavigateToMap = { currentScreen = Screen.Map },
-            onNavigateToUbicaciones = { currentScreen = Screen.Ubicaciones },
-            onNavigateToPerfil = { currentScreen = Screen.Perfil },
-            onLogout = { currentScreen = Screen.Login }
-        )
-        is Screen.Ruta -> RutaScreen(
-            onNavigateToMap = { currentScreen = Screen.Map },
-            onNavigateToUbicaciones = { currentScreen = Screen.Ubicaciones },
-            onNavigateToPerfil = { currentScreen = Screen.Perfil }
+            onNavigateToHome = { currentScreen = Screen.Home },
+            onNavigateToMapa = { currentScreen = Screen.Mapa },
+            onNavigateToRutas = { currentScreen = Screen.Rutas },
+            onNavigateToAlquiler = { currentScreen = Screen.Alquiler },
+            onLogout = { currentScreen = Screen.Login },
+            onRegister = { currentScreen = Screen.Register }
         )
     }
 }

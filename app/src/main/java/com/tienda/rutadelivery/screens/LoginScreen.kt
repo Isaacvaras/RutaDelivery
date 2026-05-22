@@ -54,7 +54,7 @@ fun LoginScreen(
                 verticalArrangement = Arrangement.spacedBy(0.dp)
             ) {
 
-                //Encabezado
+
                 Text(
                     text = "Bienvenido",
                     fontSize = 26.sp,
@@ -123,7 +123,7 @@ fun LoginScreen(
 
                 Spacer(Modifier.height(24.dp))
 
-                // Botón Ingresar
+
                 Button(
                     onClick = onLogin,
                     modifier = Modifier
@@ -142,7 +142,7 @@ fun LoginScreen(
 
                 Spacer(Modifier.height(20.dp))
 
-                //Divisor
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
@@ -158,7 +158,7 @@ fun LoginScreen(
 
                 Spacer(Modifier.height(8.dp))
 
-                // Registro
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center,
