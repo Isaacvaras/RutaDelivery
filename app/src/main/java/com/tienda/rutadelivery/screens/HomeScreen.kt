@@ -23,9 +23,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tienda.rutadelivery.ApiService
 import com.tienda.rutadelivery.AppState
 import com.tienda.rutadelivery.Punto
 import com.tienda.rutadelivery.Ruta
+import kotlinx.coroutines.launch
 import kotlin.math.*
 
 fun distanciaEntre(p1: Punto, p2: Punto): Double {
@@ -49,6 +51,9 @@ fun HomeScreen(
 ) {
     var rutas by remember { mutableStateOf(AppState.rutasGuardadas.toList()) }
     var puntos by remember { mutableStateOf(AppState.puntosGuardados.toList()) }
+    var cargando by remember { mutableStateOf(false) }
+    var recargar by remember { mutableStateOf(0) }
+    val scope = rememberCoroutineScope()
 
     var showAddRutaDialog by remember { mutableStateOf(false) }
     var showAddPuntoDialog by remember { mutableStateOf(false) }
@@ -58,11 +63,41 @@ fun HomeScreen(
 
     var nuevaRutaNombre by remember { mutableStateOf("") }
     var paradasSeleccionadas by remember { mutableStateOf<List<Punto>>(emptyList()) }
-
     var nuevoPuntoNombre by remember { mutableStateOf("") }
     var nuevoPuntoDireccion by remember { mutableStateOf("") }
 
-    // Dialog crear ruta con paradas
+    LaunchedEffect(recargar) {
+        cargando = true
+        try {
+            val rutasApi = ApiService.getRutas()
+            if (rutasApi.isNotEmpty()) {
+                val rutasConParadas = rutasApi.map { ruta ->
+                    val paradas = ApiService.getParadas(ruta.id)
+                    ruta.copy(puntos = paradas)
+                }
+                AppState.rutasGuardadas.clear()
+                AppState.rutasGuardadas.addAll(rutasConParadas)
+                rutas = AppState.rutasGuardadas.toList()
+            } else {
+                AppState.rutasGuardadas.clear()
+                rutas = emptyList()
+            }
+
+            val puntosApi = ApiService.getPuntos()
+            if (puntosApi.isNotEmpty()) {
+                AppState.puntosGuardados.clear()
+                AppState.puntosGuardados.addAll(puntosApi)
+                puntos = AppState.puntosGuardados.toList()
+            } else {
+                AppState.puntosGuardados.clear()
+                puntos = emptyList()
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("API_TEST", "Error: ${e.message}")
+        }
+        cargando = false
+    }
+
     if (showAddRutaDialog) {
         AlertDialog(
             onDismissRequest = {
@@ -71,11 +106,7 @@ fun HomeScreen(
                 paradasSeleccionadas = emptyList()
             },
             title = {
-                Text(
-                    text = "Nueva Ruta",
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF0D1B3E)
-                )
+                Text(text = "Nueva Ruta", fontWeight = FontWeight.Bold, color = Color(0xFF0D1B3E))
             },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -88,14 +119,12 @@ fun HomeScreen(
                         shape = RoundedCornerShape(10.dp),
                         modifier = Modifier.fillMaxWidth()
                     )
-
                     Text(
                         text = "Selecciona las paradas:",
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF0D1B3E)
                     )
-
                     if (AppState.puntosGuardados.isEmpty()) {
                         Text(
                             text = "No tienes puntos guardados. Agrega puntos primero.",
@@ -115,8 +144,7 @@ fun HomeScreen(
                                             paradasSeleccionadas + punto
                                     }
                                     .background(
-                                        if (seleccionado) Color(0xFFE8F0FF)
-                                        else Color.Transparent,
+                                        if (seleccionado) Color(0xFFE8F0FF) else Color.Transparent,
                                         RoundedCornerShape(8.dp)
                                     )
                                     .padding(8.dp),
@@ -131,31 +159,17 @@ fun HomeScreen(
                                         else
                                             paradasSeleccionadas + punto
                                     },
-                                    colors = CheckboxDefaults.colors(
-                                        checkedColor = Color(0xFF1565C0)
-                                    )
+                                    colors = CheckboxDefaults.colors(checkedColor = Color(0xFF1565C0))
                                 )
                                 Column {
-                                    Text(
-                                        text = punto.nombre,
-                                        fontSize = 13.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF0D1B3E)
-                                    )
-                                    Text(
-                                        text = punto.direccion,
-                                        fontSize = 11.sp,
-                                        color = Color.Gray
-                                    )
+                                    Text(text = punto.nombre, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0D1B3E))
+                                    Text(text = punto.direccion, fontSize = 11.sp, color = Color.Gray)
                                 }
                             }
                         }
                     }
-
                     if (paradasSeleccionadas.size >= 2) {
-                        val distancia = paradasSeleccionadas
-                            .zipWithNext()
-                            .sumOf { (a, b) -> distanciaEntre(a, b) }
+                        val distancia = paradasSeleccionadas.zipWithNext().sumOf { (a, b) -> distanciaEntre(a, b) }
                         Card(
                             shape = RoundedCornerShape(8.dp),
                             colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F5E9))
@@ -177,27 +191,35 @@ fun HomeScreen(
                     onClick = {
                         if (nuevaRutaNombre.isNotEmpty() && paradasSeleccionadas.isNotEmpty()) {
                             val distancia = if (paradasSeleccionadas.size >= 2)
-                                paradasSeleccionadas.zipWithNext()
-                                    .sumOf { (a, b) -> distanciaEntre(a, b) }
+                                paradasSeleccionadas.zipWithNext().sumOf { (a, b) -> distanciaEntre(a, b) }
                             else 0.0
-
                             val nuevaRuta = Ruta(
-                                id = AppState.contadorRutas++,
+                                id = 0,
                                 nombre = nuevaRutaNombre,
                                 puntos = paradasSeleccionadas,
                                 distanciaKm = distancia
                             )
-                            AppState.rutasGuardadas.add(nuevaRuta)
-                            rutas = AppState.rutasGuardadas.toList()
-                            showAddRutaDialog = false
-                            nuevaRutaNombre = ""
-                            paradasSeleccionadas = emptyList()
+                            scope.launch {
+                                cargando = true
+                                val id = ApiService.crearRuta(nuevaRuta)
+                                if (id != null) {
+                                    recargar++
+                                }
+                                cargando = false
+                                showAddRutaDialog = false
+                                nuevaRutaNombre = ""
+                                paradasSeleccionadas = emptyList()
+                            }
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0D1B3E)),
-                    enabled = nuevaRutaNombre.isNotEmpty() && paradasSeleccionadas.isNotEmpty()
+                    enabled = nuevaRutaNombre.isNotEmpty() && paradasSeleccionadas.isNotEmpty() && !cargando
                 ) {
-                    Text("Crear Ruta")
+                    if (cargando) {
+                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(16.dp))
+                    } else {
+                        Text("Crear Ruta")
+                    }
                 }
             },
             dismissButton = {
@@ -212,16 +234,11 @@ fun HomeScreen(
         )
     }
 
-
     showRutaDetalleDialog?.let { ruta ->
         AlertDialog(
             onDismissRequest = { showRutaDetalleDialog = null },
             title = {
-                Text(
-                    text = ruta.nombre,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF0D1B3E)
-                )
+                Text(text = ruta.nombre, fontWeight = FontWeight.Bold, color = Color(0xFF0D1B3E))
             },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -242,20 +259,10 @@ fun HomeScreen(
                                     .background(Color(0xFF0D1B3E), RoundedCornerShape(14.dp)),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(
-                                    "${index + 1}",
-                                    color = Color.White,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
+                                Text("${index + 1}", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             }
                             Column {
-                                Text(
-                                    punto.nombre,
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF0D1B3E)
-                                )
+                                Text(punto.nombre, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0D1B3E))
                                 Text(punto.direccion, fontSize = 11.sp, color = Color.Gray)
                             }
                         }
@@ -281,7 +288,6 @@ fun HomeScreen(
         )
     }
 
-
     if (showAddPuntoDialog) {
         AlertDialog(
             onDismissRequest = {
@@ -290,11 +296,7 @@ fun HomeScreen(
                 nuevoPuntoDireccion = ""
             },
             title = {
-                Text(
-                    text = "Nuevo Punto",
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF0D1B3E)
-                )
+                Text(text = "Nuevo Punto", fontWeight = FontWeight.Bold, color = Color(0xFF0D1B3E))
             },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -323,17 +325,23 @@ fun HomeScreen(
                     onClick = {
                         if (nuevoPuntoNombre.isNotEmpty() && nuevoPuntoDireccion.isNotEmpty()) {
                             val nuevoPunto = Punto(
-                                id = AppState.contadorPuntos++,
+                                id = 0,
                                 nombre = nuevoPuntoNombre,
                                 direccion = nuevoPuntoDireccion,
                                 lat = -12.1219,
                                 lon = -77.0290
                             )
-                            AppState.puntosGuardados.add(nuevoPunto)
-                            puntos = AppState.puntosGuardados.toList()
-                            showAddPuntoDialog = false
-                            nuevoPuntoNombre = ""
-                            nuevoPuntoDireccion = ""
+                            scope.launch {
+                                cargando = true
+                                val id = ApiService.crearPunto(nuevoPunto)
+                                if (id != null) {
+                                    recargar++
+                                }
+                                cargando = false
+                                showAddPuntoDialog = false
+                                nuevoPuntoNombre = ""
+                                nuevoPuntoDireccion = ""
+                            }
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0D1B3E))
@@ -353,7 +361,6 @@ fun HomeScreen(
         )
     }
 
-
     showDeleteRutaDialog?.let { ruta ->
         AlertDialog(
             onDismissRequest = { showDeleteRutaDialog = null },
@@ -364,9 +371,13 @@ fun HomeScreen(
             confirmButton = {
                 Button(
                     onClick = {
-                        AppState.rutasGuardadas.remove(ruta)
-                        rutas = AppState.rutasGuardadas.toList()
-                        showDeleteRutaDialog = null
+                        scope.launch {
+                            val ok = ApiService.eliminarRuta(ruta.id)
+                            if (ok) {
+                                recargar++
+                            }
+                            showDeleteRutaDialog = null
+                        }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8B1A1A))
                 ) { Text("Eliminar") }
@@ -376,7 +387,6 @@ fun HomeScreen(
             }
         )
     }
-
 
     showDeletePuntoDialog?.let { punto ->
         AlertDialog(
@@ -388,9 +398,13 @@ fun HomeScreen(
             confirmButton = {
                 Button(
                     onClick = {
-                        AppState.puntosGuardados.remove(punto)
-                        puntos = AppState.puntosGuardados.toList()
-                        showDeletePuntoDialog = null
+                        scope.launch {
+                            val ok = ApiService.eliminarPunto(punto.id)
+                            if (ok) {
+                                recargar++
+                            }
+                            showDeletePuntoDialog = null
+                        }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8B1A1A))
                 ) { Text("Eliminar") }
@@ -435,306 +449,245 @@ fun HomeScreen(
             }
         }
     ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text(
-                            text = "Hola, ${AppState.usuarioActual.nombre.split(" ").first()} 👋",
-                            fontSize = 22.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF0D1B3E)
-                        )
-                        Text(
-                            text = "¿A dónde pedaleamos hoy?",
-                            fontSize = 13.sp,
-                            color = Color.Gray
-                        )
-                    }
-                    Box(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .background(Color(0xFF1565C0), RoundedCornerShape(24.dp))
-                            .clickable { onNavigateToPerfil() },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("🚲", fontSize = 22.sp)
-                    }
-                }
+        if (cargando) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = Color(0xFF1565C0))
             }
-
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Card(
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF0D1B3E))
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text("${rutas.size}", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                            Text("Rutas", fontSize = 12.sp, color = Color.Gray)
-                        }
-                    }
-                    Card(
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF1565C0))
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text("${puntos.size}", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                            Text("Puntos", fontSize = 12.sp, color = Color.Gray)
-                        }
-                    }
-                    Card(
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF2E7D32))
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                "${AppState.bicisDisponibles.count { it.disponible }}",
-                                fontSize = 24.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
-                            Text("Bicis", fontSize = 12.sp, color = Color.Gray)
-                        }
-                    }
-                }
-            }
-
-            item {
-                Text(
-                    text = "Accesos rápidos",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF0D1B3E)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    item {
-                        Card(
-                            modifier = Modifier.width(120.dp).clickable { onNavigateToMapa() },
-                            shape = RoundedCornerShape(12.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F0FF))
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(16.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text("🗺️", fontSize = 28.sp)
-                                Text("Ver Mapa", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0D1B3E))
-                            }
-                        }
-                    }
-                    item {
-                        Card(
-                            modifier = Modifier.width(120.dp).clickable { onNavigateToRutas() },
-                            shape = RoundedCornerShape(12.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F5E9))
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(16.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text("🛣️", fontSize = 28.sp)
-                                Text("Ruta Óptima", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0D1B3E))
-                            }
-                        }
-                    }
-                    item {
-                        Card(
-                            modifier = Modifier.width(120.dp).clickable { onNavigateToAlquiler() },
-                            shape = RoundedCornerShape(12.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF3E0))
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(16.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text("🚲", fontSize = 28.sp)
-                                Text("Alquilar", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0D1B3E))
-                            }
-                        }
-                    }
-                }
-            }
-
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Mis Rutas",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF0D1B3E)
-                    )
-                    IconButton(onClick = { showAddRutaDialog = true }) {
-                        Icon(Icons.Default.Add, contentDescription = "Agregar ruta", tint = Color(0xFF1565C0))
-                    }
-                }
-            }
-
-            if (rutas.isEmpty()) {
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
                 item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(
+                                text = "Hola, ${AppState.usuarioActual.nombre.split(" ").first()} 👋",
+                                fontSize = 22.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF0D1B3E)
+                            )
+                            Text(text = "¿A dónde pedaleamos hoy?", fontSize = 13.sp, color = Color.Gray)
+                        }
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .background(Color(0xFF1565C0), RoundedCornerShape(24.dp))
+                                .clickable { onNavigateToPerfil() },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("🚲", fontSize = 22.sp)
+                        }
+                    }
+                }
+
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Card(
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFF0D1B3E))
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("${rutas.size}", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                Text("Rutas", fontSize = 12.sp, color = Color.Gray)
+                            }
+                        }
+                        Card(
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFF1565C0))
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("${puntos.size}", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                Text("Puntos", fontSize = 12.sp, color = Color.Gray)
+                            }
+                        }
+                        Card(
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFF2E7D32))
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    "${AppState.bicisDisponibles.count { it.disponible }}",
+                                    fontSize = 24.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                                Text("Bicis", fontSize = 12.sp, color = Color.Gray)
+                            }
+                        }
+                    }
+                }
+
+                item {
+                    Text(text = "Accesos rápidos", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0D1B3E))
+                    Spacer(modifier = Modifier.height(8.dp))
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        item {
+                            Card(
+                                modifier = Modifier.width(120.dp).clickable { onNavigateToMapa() },
+                                shape = RoundedCornerShape(12.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F0FF))
+                            ) {
+                                Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text("🗺️", fontSize = 28.sp)
+                                    Text("Ver Mapa", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0D1B3E))
+                                }
+                            }
+                        }
+                        item {
+                            Card(
+                                modifier = Modifier.width(120.dp).clickable { onNavigateToRutas() },
+                                shape = RoundedCornerShape(12.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F5E9))
+                            ) {
+                                Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text("🛣️", fontSize = 28.sp)
+                                    Text("Ruta Óptima", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0D1B3E))
+                                }
+                            }
+                        }
+                        item {
+                            Card(
+                                modifier = Modifier.width(120.dp).clickable { onNavigateToAlquiler() },
+                                shape = RoundedCornerShape(12.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF3E0))
+                            ) {
+                                Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text("🚲", fontSize = 28.sp)
+                                    Text("Alquilar", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0D1B3E))
+                                }
+                            }
+                        }
+                    }
+                }
+
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(text = "Mis Rutas", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0D1B3E))
+                        IconButton(onClick = { showAddRutaDialog = true }) {
+                            Icon(Icons.Default.Add, contentDescription = "Agregar ruta", tint = Color(0xFF1565C0))
+                        }
+                    }
+                }
+
+                if (rutas.isEmpty()) {
+                    item {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5))
+                        ) {
+                            Box(modifier = Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
+                                Text("No tienes rutas guardadas", color = Color.Gray, fontSize = 13.sp)
+                            }
+                        }
+                    }
+                }
+
+                items(rutas) { ruta ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth().clickable { showRutaDetalleDialog = ruta },
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(2.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier.size(44.dp).background(Color(0xFF1565C0).copy(alpha = 0.1f), RoundedCornerShape(22.dp)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("🛣️", fontSize = 20.sp)
+                            }
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(text = ruta.nombre, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color(0xFF0D1B3E))
+                                Text(text = "${ruta.puntos.size} paradas · ${ruta.distanciaKm} km", fontSize = 12.sp, color = Color.Gray)
+                            }
+                            IconButton(onClick = { showDeleteRutaDialog = ruta }) {
+                                Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = Color(0xFF8B1A1A))
+                            }
+                        }
+                    }
+                }
+
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(text = "Mis Puntos", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0D1B3E))
+                        IconButton(onClick = { showAddPuntoDialog = true }) {
+                            Icon(Icons.Default.Add, contentDescription = "Agregar punto", tint = Color(0xFF1565C0))
+                        }
+                    }
+                }
+
+                if (puntos.isEmpty()) {
+                    item {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5))
+                        ) {
+                            Box(modifier = Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
+                                Text("No tienes puntos guardados", color = Color.Gray, fontSize = 13.sp)
+                            }
+                        }
+                    }
+                }
+
+                items(puntos) { punto ->
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5))
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(2.dp)
                     ) {
-                        Box(
-                            modifier = Modifier.fillMaxWidth().padding(24.dp),
-                            contentAlignment = Alignment.Center
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            Text("No tienes rutas guardadas", color = Color.Gray, fontSize = 13.sp)
+                            Box(
+                                modifier = Modifier.size(44.dp).background(Color(0xFF2E7D32).copy(alpha = 0.1f), RoundedCornerShape(22.dp)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("📍", fontSize = 20.sp)
+                            }
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(text = punto.nombre, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color(0xFF0D1B3E))
+                                Text(text = punto.direccion, fontSize = 12.sp, color = Color.Gray)
+                            }
+                            IconButton(onClick = { showDeletePuntoDialog = punto }) {
+                                Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = Color(0xFF8B1A1A))
+                            }
                         }
                     }
                 }
-            }
 
-            items(rutas) { ruta ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { showRutaDetalleDialog = ruta },
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(2.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(44.dp)
-                                .background(Color(0xFF1565C0).copy(alpha = 0.1f), RoundedCornerShape(22.dp)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("🛣️", fontSize = 20.sp)
-                        }
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = ruta.nombre,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 15.sp,
-                                color = Color(0xFF0D1B3E)
-                            )
-                            Text(
-                                text = "${ruta.puntos.size} paradas · ${ruta.distanciaKm} km",
-                                fontSize = 12.sp,
-                                color = Color.Gray
-                            )
-                        }
-                        IconButton(onClick = { showDeleteRutaDialog = ruta }) {
-                            Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = Color(0xFF8B1A1A))
-                        }
-                    }
-                }
+                item { Spacer(modifier = Modifier.height(16.dp)) }
             }
-
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Mis Puntos",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF0D1B3E)
-                    )
-                    IconButton(onClick = { showAddPuntoDialog = true }) {
-                        Icon(Icons.Default.Add, contentDescription = "Agregar punto", tint = Color(0xFF1565C0))
-                    }
-                }
-            }
-
-            if (puntos.isEmpty()) {
-                item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5))
-                    ) {
-                        Box(
-                            modifier = Modifier.fillMaxWidth().padding(24.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("No tienes puntos guardados", color = Color.Gray, fontSize = 13.sp)
-                        }
-                    }
-                }
-            }
-
-            items(puntos) { punto ->
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(2.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(44.dp)
-                                .background(Color(0xFF2E7D32).copy(alpha = 0.1f), RoundedCornerShape(22.dp)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("📍", fontSize = 20.sp)
-                        }
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = punto.nombre,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 15.sp,
-                                color = Color(0xFF0D1B3E)
-                            )
-                            Text(
-                                text = punto.direccion,
-                                fontSize = 12.sp,
-                                color = Color.Gray
-                            )
-                        }
-                        IconButton(onClick = { showDeletePuntoDialog = punto }) {
-                            Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = Color(0xFF8B1A1A))
-                        }
-                    }
-                }
-            }
-
-            item { Spacer(modifier = Modifier.height(16.dp)) }
         }
     }
 }

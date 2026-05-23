@@ -1,5 +1,6 @@
 package com.tienda.rutadelivery
 
+
 data class Usuario(
     val id: Int = 1,
     var nombre: String = "",
@@ -38,7 +39,6 @@ data class Reserva(
     val hora: String
 )
 
-// Estado global de la app en memoria
 object AppState {
     var usuarioActual = Usuario(
         nombre = "Isaac Varas",
@@ -47,22 +47,9 @@ object AppState {
         password = "citybike123"
     )
 
-    val puntosGuardados = mutableListOf(
-        Punto(1, "Casa", "Av. Larco 456, Miraflores", -12.1219, -77.0290),
-        Punto(2, "Trabajo", "Calle Libertad 123, San Isidro", -12.0975, -77.0353),
-        Punto(3, "Gimnasio", "Av. Benavides 890, Miraflores", -12.1340, -77.0150)
-    )
+    val puntosGuardados = mutableListOf<Punto>()
 
-    val rutasGuardadas = mutableListOf(
-        Ruta(1, "Ruta Miraflores", listOf(
-            Punto(1, "Casa", "Av. Larco 456", -12.1219, -77.0290),
-            Punto(2, "Trabajo", "Calle Libertad 123", -12.0975, -77.0353)
-        ), 3.2),
-        Ruta(2, "Ruta San Isidro", listOf(
-            Punto(2, "Trabajo", "Calle Libertad 123", -12.0975, -77.0353),
-            Punto(3, "Gimnasio", "Av. Benavides 890", -12.1340, -77.0150)
-        ), 2.8)
-    )
+    val rutasGuardadas = mutableListOf<Ruta>()
 
     val bicisDisponibles = mutableListOf(
         Bici(1, "Trek FX3", "Estación Miraflores", true),
